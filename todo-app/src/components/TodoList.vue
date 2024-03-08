@@ -1,4 +1,4 @@
-<template>
+ <template>
   <div class="container">
     <div class="input-container">
       <input type="text" v-model="newTask" placeholder="Add a new task" @keyup.enter="addTask">
@@ -6,57 +6,37 @@
     </div>
     <ul>
       <li v-for="(todo, index) in todos" :key="index">
-        <div :class="{ 'completed': todo.completed }">
-          <span>{{ todo.text }}</span>
-          <div class="actions">
-            <button @click="toggleCompletion(index)">
-              {{ todo.completed ? 'Mark Incomplete' : 'Mark Completed' }}
-            </button>
-            <button @click="editTask(index)">Edit</button>
-            <button @click="removeTodo(index)">Remove</button>
-          </div>
-        </div>
+        <TodoItem :todo="todo" :index="index" @remove="removeTodo" @edit="editTask" />
       </li>
     </ul>
   </div>
 </template>
 
 <script>
-import { defineComponent, ref } from 'vue';
+import { defineComponent, computed, ref } from 'vue';
+import { useStore } from 'vuex';
 import TodoItem from './TodoItem.vue';
 
 export default defineComponent({
   components: {
-    TodoItem,
+    TodoItem
   },
   setup() {
+    const store = useStore();
     const newTask = ref('');
-    const todos = ref([]);
+    const todos = computed(() => store.getters.allTodos);
 
     const addTask = () => {
-      if (newTask.value.trim() !== '') {
-        todos.value.push({ text: newTask.value, completed: false });
-        newTask.value = '';
-      
-      }
+      store.dispatch('addTask', newTask.value);
+      newTask.value = '';
     };
 
     const removeTodo = (index) => {
-      todos.value.splice(index, 1);
-      
+      store.dispatch('removeTodo', index);
     };
 
-    const editTask = (index) => {
-      const newText = prompt('Edit task:', todos.value[index].text)
-      if (newText !== null) {
-        todos.value[index].text = newText;
-      
-      }
-    };
-
-    const toggleCompletion = (index) => {
-      todos.value[index].completed = !todos.value[index].completed;
-      
+    const editTask = (index, newText) => {
+      store.dispatch('editTask', { index, newText });
     };
 
     return {
@@ -64,10 +44,9 @@ export default defineComponent({
       todos,
       addTask,
       removeTodo,
-      editTask,
-      toggleCompletion,
+      editTask
     };
-  },
+  }
 });
 </script>
 
@@ -107,12 +86,7 @@ ul {
   text-decoration: line-through;
 }
 
-.actions {
-  display: flex;
-}
-
 .actions button {
   margin-right: 5px;
 }
 </style>
-

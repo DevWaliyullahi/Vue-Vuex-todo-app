@@ -1,42 +1,58 @@
-<template>
-  <div>
-    <input type="checkbox" v-model="todo.completed">
-    <span :class="{ 'completed': todo.completed }">{{ todo.text }}</span>
-    <button @click="$emit('remove')">Remove</button>
-    <button @click="isEditing = true">Edit</button> 
-    <input v-if="isEditing" type="text" v-model="editedText" @keyup.enter="saveEdit" @blur="cancelEdit">
-  </div>
-</template>
-
-<script>
-import { defineComponent } from 'vue';
-
-export default defineComponent({
-  props: {
-    todo: Object,
-  },
-  data() {
-    return {
-      isEditing: false,
-      editedText: this.todo.text,
-    };
-  },
-  methods: {
-    saveEdit() {
-      this.$emit('edit', this.editedText);
-      this.isEditing = false;
+  <template>
+    <div>
+      <input type="checkbox" v-model="todo.completed">
+      <span :class="{ 'completed': todo.completed }">{{ todo.text }}</span>
+      <button @click="removeTodo">Remove</button>
+      <button @click="editTodo">Edit</button> 
+    </div>
+  </template>
+  
+  <script>
+  import { defineComponent } from 'vue';
+  
+  export default defineComponent({
+    props: {
+      todo: Object,
+      index: Number
     },
-    cancelEdit() {
-      this.isEditing = false;
-      this.editedText = this.todo.text;
-    },
-  },
-});
-</script>
+    setup(props, { emit }) {
+      const removeTodo = () => {
+        emit('remove', props.index);
+      };
+  
+      const editTodo = () => {
+        const newText = prompt('Edit task:', props.todo.text);
+        if (newText !== null) {
+          emit('edit',props.index, newText);
+        }
+      };
 
-<style scoped>
-.completed {
-  text-decoration: line-through;
-}
-</style>
-
+  
+      return {
+        removeTodo,
+        editTodo
+      };
+    }
+  });
+  </script>
+  
+  <style scoped>
+  .completed {
+    text-decoration: line-through;
+  }
+  
+  button {
+    padding: 5px 10px;
+    margin-left: 5px;
+    cursor: pointer;
+    border: none;
+    border-radius: 3px;
+    background-color: #4CAF50;
+    color: white;
+  }
+  
+  button:hover {
+    background-color: #45a049;
+  }
+  </style>
+  
